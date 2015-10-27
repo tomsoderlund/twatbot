@@ -10,6 +10,9 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var users = require('./routes/user');
 
+var twatbot = require('./lib/twatbot');
+twatbot.start();
+
 var app = express();
 
 var env = process.env.NODE_ENV || 'development';
