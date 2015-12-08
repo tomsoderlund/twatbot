@@ -1,14 +1,17 @@
 'use strict';
 
-var twitterConfig = require("../config/twitter-account");
-
 var _ = require('lodash');
 var async = require('async');
 var moment = require('moment');
 var Twit = require('twit') // https://github.com/ttezel/twit
-var TwitterBot = require("node-twitterbot").TwitterBot; // https://github.com/nkirby/node-twitterbot
+//var TwitterBot = require("node-twitterbot").TwitterBot; // https://github.com/nkirby/node-twitterbot
 
-var twitObj = new Twit(twitterConfig);
+var twitObj = new Twit({
+	"consumer_secret": process.env['TWITTER_CONSUMER_SECRET'],
+	"consumer_key": process.env['TWITTER_CONSUMER_KEY'],
+	"access_token": process.env['TWITTER_ACCESS_TOKEN'],
+	"access_token_secret": process.env['TWITTER_ACCESS_TOKEN_SECRET']
+});
 
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
@@ -55,7 +58,7 @@ var postTweet = function (message, replyToStatusObj, callback) {
 	var params = {
 		status: message,
 	};
-	// Is a twitter reply?
+	// Is this a reply? NOTE: must also have @recipient in text
 	if (replyToStatusObj) {
 		params.in_reply_to_status_id = replyToStatusObj.id_str;
 	}
@@ -96,12 +99,12 @@ var getRandomMessageForTopic = function (topic, replyToStatusObj, callback) {
 
 var searchAndTweet = function (callbackWhenDone) {
 
-// 1. For each 'trigger'
-// 2. Search Twitter for trigger
-// 3. Find first user not on the user list
-// 4. Get a suitable message template
-// 5. Send them a tweet
-// 6. Save user, trigger, and message objects
+	// 1. For each 'trigger'
+	// 2. Search Twitter for trigger
+	// 3. Find first user not on the user list
+	// 4. Get a suitable message template
+	// 5. Send them a tweet
+	// 6. Save user, trigger, and message objects
 
 	var saveOptions = function (userObj, trigger, messageObj, cbAfterSave) {
 		async.parallel([
@@ -184,6 +187,7 @@ var searchAndTweet = function (callbackWhenDone) {
 module.exports = {
 
 	start: function (cbAfterRun) {
+		
 		console.log('TWATBOT_DEBUG:', TWATBOT_DEBUG);
 		console.log('TWATBOT_SEARCH_LIMIT:', TWATBOT_SEARCH_LIMIT);
 

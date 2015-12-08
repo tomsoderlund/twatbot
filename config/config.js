@@ -13,7 +13,6 @@ var config = {
 		},
 		port: 3003,
 		db: 'mongodb://localhost/twatbot-development'
-		
 	},
 
 	test: {
@@ -23,7 +22,6 @@ var config = {
 		},
 		port: 3000,
 		db: 'mongodb://localhost/twatbot-test'
-		
 	},
 
 	production: {
@@ -33,7 +31,6 @@ var config = {
 		},
 		port: 3000,
 		db: process.env.MONGOLAB_URI || 'mongodb://localhost/twatbot-production'
-
 	}
 
 };
