@@ -6,12 +6,7 @@ var moment = require('moment');
 var Twit = require('twit') // https://github.com/ttezel/twit
 //var TwitterBot = require("node-twitterbot").TwitterBot; // https://github.com/nkirby/node-twitterbot
 
-var twitObj = new Twit({
-	"consumer_secret": process.env['TWITTER_CONSUMER_SECRET'],
-	"consumer_key": process.env['TWITTER_CONSUMER_KEY'],
-	"access_token": process.env['TWITTER_ACCESS_TOKEN'],
-	"access_token_secret": process.env['TWITTER_ACCESS_TOKEN_SECRET']
-});
+var twitObj;
 
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
@@ -187,14 +182,28 @@ var searchAndTweet = function (callbackWhenDone) {
 module.exports = {
 
 	start: function (cbAfterRun) {
-		
-		console.log('TWATBOT_DEBUG:', TWATBOT_DEBUG);
-		console.log('TWATBOT_SEARCH_LIMIT:', TWATBOT_SEARCH_LIMIT);
 
-		async.series([
-			searchAndTweet,
-			cbAfterRun
-		]);
+		if (!process.env['TWITTER_CONSUMER_KEY']) {
+			console.error('Twitter settings not found in environment.');
+			cbAfterRun(null);
+		}
+		else {
+			twitObj = new Twit({
+				"consumer_key": process.env['TWITTER_CONSUMER_KEY'],
+				"consumer_secret": process.env['TWITTER_CONSUMER_SECRET'],
+				"access_token": process.env['TWITTER_ACCESS_TOKEN'],
+				"access_token_secret": process.env['TWITTER_ACCESS_TOKEN_SECRET']
+			});
+
+			console.log('TWATBOT_DEBUG:', TWATBOT_DEBUG);
+			console.log('TWATBOT_SEARCH_LIMIT:', TWATBOT_SEARCH_LIMIT);
+
+			async.series([
+				searchAndTweet,
+				cbAfterRun
+			]);
+		}
+
 	}
 
 }
