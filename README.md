@@ -10,14 +10,15 @@ The smart Twitter bot.
 * When someone asks a question, tweet a related reply to them.
 * Save list of Twitter usernames so you don’t tweet same person twice.
 * Support for grouping triggers/reply messages in "topics".
+* Config in ENV variables.
 
 **Planned:**
 
-* Config in ENV variables
-* Support for questions
-* Have a time limit for tweets - not tweet too often.
-* Personalize messages
+* Support for questions - "?" in tweet.
+* Use "enabled" flag on triggers/messages.
+* Personalize sent messages.
 * When someone follows your Twitter account, send the a personalized direct message (DM).
+* Have a time limit for tweets - not tweet too often.
 
 
 ## How to run
@@ -42,6 +43,8 @@ You need Twitter access token: https://dev.twitter.com/oauth/overview/applicatio
 
 Can be used with a scheduler: https://devcenter.heroku.com/articles/scheduler
 
+	heroku addons:create scheduler:standard
+	heroku addons:open scheduler
 
 ## Implementation
 

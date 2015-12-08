@@ -133,15 +133,21 @@ var searchAndTweet = function (callbackWhenDone) {
 			trigger.topic,
 			replyToStatusObj,
 			function (err, messageObj) {
-				// Personalize message
-				var personalMessage = '@' + replyToStatusObj.user.screen_name + ' ' + messageObj.text;
-				// 5. Send them a tweet
-				postTweet(personalMessage, replyToStatusObj,
-					function (err, data) {
-						// 6. Save user, trigger, and message objects
-						saveOptions(replyToStatusObj.user, trigger, messageObj, cbAfterSend);
-					}
-				);
+				if (err) {
+					console.error('sendMessageAndUpdateRecords:', err);
+					cbAfterSend(err);
+				}
+				else {
+					// Personalize message
+					var personalMessage = '@' + replyToStatusObj.user.screen_name + ' ' + messageObj.text;
+					// 5. Send them a tweet
+					postTweet(personalMessage, replyToStatusObj,
+						function (err, data) {
+							// 6. Save user, trigger, and message objects
+							saveOptions(replyToStatusObj.user, trigger, messageObj, cbAfterSend);
+						}
+					);
+				}
 			}
 		);
 	};
