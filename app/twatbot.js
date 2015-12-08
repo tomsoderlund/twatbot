@@ -139,7 +139,14 @@ var searchAndTweet = function (callbackWhenDone) {
 				}
 				else {
 					// Personalize message
-					var personalMessage = '@' + replyToStatusObj.user.screen_name + ' ' + messageObj.text;
+					if (messageObj.text.indexOf('{{screen_name}}') !== -1) {
+						// {{screen_name}} is in template
+						var personalMessage = messageObj.text.replace(/{{screen_name}}/g, '@' + replyToStatusObj.user.screen_name);
+					}
+					else {
+						// {{screen_name}} NOT in template
+						var personalMessage = '@' + replyToStatusObj.user.screen_name + ' ' + messageObj.text;
+					}
 					// 5. Send them a tweet
 					postTweet(personalMessage, replyToStatusObj,
 						function (err, data) {
