@@ -16,14 +16,13 @@ var Trigger = mongoose.model('Trigger');
 var Message = mongoose.model('Message');
 
 
-var DEBUG_MODE = true;
-var TWEET_SEARCH_LIMIT = 50;
+var TWATBOT_DEBUG = (process.env['TWATBOT_DEBUG'] === 'false' ? false : true);
+var TWATBOT_SEARCH_LIMIT = (process.env['TWATBOT_SEARCH_LIMIT']  ? parseInt(process.env['TWATBOT_SEARCH_LIMIT']) : 50);
 
 
 String.prototype.toSlug = function () {
 	return this.trim().replace(/ /g,'-').replace(/[^\w-]+/g,'').toLowerCase();
 };
-
 
 var triggerOnDirectMessage = function () {
 	var stream = twitObj.stream('user');
@@ -44,26 +43,25 @@ var searchTweets = function (searchStr, options, callback) {
 	// 'banana since:2011-11-11'
 	var params = {
 		q: '“' + searchStr + '”',
-		count: TWEET_SEARCH_LIMIT,
+		count: TWATBOT_SEARCH_LIMIT,
 	};
 	twitObj.get('search/tweets', params, function (err, data, response) {
 		console.log('Search:', params.q, data.statuses.length);
-		callback(data.statuses);
+		callback(err, data.statuses);
 	})
 }
 
-var postTweet = function (message, replyToStatusObj, sendForReal, callback) {
+var postTweet = function (message, replyToStatusObj, callback) {
 	var params = {
 		status: message,
 	};
 	// Is a twitter reply?
 	if (replyToStatusObj) {
 		params.in_reply_to_status_id = replyToStatusObj.id_str;
-		params.status = '@' + replyToStatusObj.user.screen_name + ' ' + params.status;
 	}
 	// Tweet!
-	console.log('Tweet:' + sendForReal, '“' + params.status + '”' + (replyToStatusObj ? ' (reply to “' + replyToStatusObj.text + '”)' : ''));
-	if (sendForReal) {
+	console.log('Tweet:' + (!TWATBOT_DEBUG), '“' + params.status + '”' + (replyToStatusObj ? ' - reply to @' + replyToStatusObj.user.screen_name + ':“' + replyToStatusObj.text + '” https://twitter.com/' + replyToStatusObj.user.screen_name + '/status/' + replyToStatusObj.id_str : ''));
+	if (!TWATBOT_DEBUG) {
 		twitObj.post('statuses/update', params, callback)
 	}
 	else {
@@ -83,7 +81,7 @@ var getExistingUsernames = function (callback) {
 	// user.save();
 	User.find({}).exec(function (err, users) {
 		var usernameArray = _.pluck(users, 'screen_name');
-		callback(usernameArray);
+		callback(err, usernameArray);
 	});
 };
 
@@ -92,7 +90,7 @@ var getRandomMessageForTopic = function (topic, replyToStatusObj, callback) {
 	// message.save();
 	Message.find({ topic: topic }).exec(function (err, messages) {
 		var messageObj = messages[Math.floor(Math.random() * messages.length)];
-		callback(messageObj);
+		callback(err, messageObj);
 	});
 };
 
@@ -105,84 +103,94 @@ var searchAndTweet = function (callbackWhenDone) {
 // 5. Send them a tweet
 // 6. Save user, trigger, and message objects
 
-	var sendMessageAndUpdateRecords = function (trigger, replyToStatusObj, callback) {
+	var saveOptions = function (userObj, trigger, messageObj, cbAfterSave) {
+		async.parallel([
+			// User
+			function (cb) {
+				var user = new User({ screen_name: userObj.screen_name });
+				user.save(cb);
+			},
+			// Trigger
+			function (cb) {
+				trigger.dateLastUsed = new Date();
+				trigger.usedCount++;
+				trigger.save(cb);
+			},
+			// Message
+			function (cb) {
+				messageObj.dateLastUsed = new Date();
+				messageObj.usedCount++;
+				messageObj.save(cb);
+			},
+		],
+		// When all done
+		function (err, results) {
+			cbAfterSave(null);
+		});
+	};
+
+	var sendMessageAndUpdateRecords = function (trigger, replyToStatusObj, cbAfterSend) {
 		// 4. Get a suitable message template
 		getRandomMessageForTopic(
 			trigger.topic,
 			replyToStatusObj,
-			function (messageObj) {
+			function (err, messageObj) {
+				// Personalize message
+				var personalMessage = '@' + replyToStatusObj.user.screen_name + ' ' + messageObj.text;
 				// 5. Send them a tweet
-				postTweet(
-					messageObj.text,
-					replyToStatusObj,
-					!DEBUG_MODE,
-					function () {
+				postTweet(personalMessage, replyToStatusObj,
+					function (err, data) {
 						// 6. Save user, trigger, and message objects
-						async.parallel([
-							// User
-							function (cb) {
-								var user = new User({ screen_name: replyToStatusObj.user.screen_name });
-								user.save(cb);
-							},
-							// Trigger
-							function (cb) {
-								trigger.dateLastUsed = new Date();
-								trigger.usedCount++;
-								trigger.save(cb);
-							},
-							// Message
-							function (cb) {
-								messageObj.dateLastUsed = new Date();
-								messageObj.usedCount++;
-								messageObj.save(cb);
-							},
-						],
-						// optional callback
-						function (err, results) {
-							callback(null);
-						});
-
+						saveOptions(replyToStatusObj.user, trigger, messageObj, cbAfterSend);
 					}
 				);
 			}
 		);
 	};
 
+	var usernameArray;
+
+	var processTrigger = function (trigger, cbAfterTrigger) {
+		// 2. Search Twitter for trigger
+		searchTweets(trigger.text, undefined, function (err, tweets) {
+			// 3. Find first user not on the user list
+			var alreadySentToOneUser = false;
+			async.each(tweets, function (tweet, cbEach) {
+				if (usernameArray.indexOf(tweet.user.screen_name) === -1 && !alreadySentToOneUser) {
+					sendMessageAndUpdateRecords(trigger, tweet, cbEach);
+					alreadySentToOneUser = true;
+				}
+				else {
+					cbEach(null);
+				}
+			},
+			cbAfterTrigger);
+		});
+	};
+
 	// First get array of users
-	getExistingUsernames(function (usernameArray) {
+	getExistingUsernames(function (err, userArray) {
+		usernameArray = userArray;
 		// 1. For each 'trigger'
 		getTriggers(function (err, triggers) {
-			for (var t in triggers) {
-				var trigger = triggers[t];
-				// 2. Search Twitter for trigger
-				searchTweets(trigger.text, undefined, function (statuses) {
-					// 3. Find first user not on the user list
-					var alreadySentToOneUser = false;
-					for (var s in statuses) {
-						var status = statuses[s];
-						if (usernameArray.indexOf(status.user.screen_name) === -1 && !alreadySentToOneUser) {
-							sendMessageAndUpdateRecords(trigger, status, callbackWhenDone);
-							alreadySentToOneUser = true;
-						}
-					};
-				});
-			};
+			async.each(triggers, processTrigger, callbackWhenDone);
 		});
 	});
 
 }
 
+//------ PUBLIC METHODS ------
 
 module.exports = {
 
-	start: function (callback) {
-		console.log('START');
+	start: function (cbAfterRun) {
+		console.log('TWATBOT_DEBUG:', TWATBOT_DEBUG);
+		console.log('TWATBOT_SEARCH_LIMIT:', TWATBOT_SEARCH_LIMIT);
 
 		async.series([
 			searchAndTweet,
-			callback
+			cbAfterRun
 		]);
-
 	}
 
 }
