@@ -58,7 +58,7 @@ var postTweet = function (message, replyToStatusObj, callback) {
 		params.in_reply_to_status_id = replyToStatusObj.id_str;
 	}
 	// Tweet!
-	console.log('Tweet:' + (!TWATBOT_DEBUG), '“' + params.status + '”' + (replyToStatusObj ? ' - reply to @' + replyToStatusObj.user.screen_name + ':“' + replyToStatusObj.text + '” https://twitter.com/' + replyToStatusObj.user.screen_name + '/status/' + replyToStatusObj.id_str : ''));
+	console.log('Tweet ' + (TWATBOT_DEBUG ? '(test)' : '(LIVE)') + ':', '“' + params.status + '”' + (replyToStatusObj ? ' - reply to @' + replyToStatusObj.user.screen_name + ':“' + replyToStatusObj.text + '” https://twitter.com/' + replyToStatusObj.user.screen_name + '/status/' + replyToStatusObj.id_str : ''));
 	if (!TWATBOT_DEBUG) {
 		twitObj.post('statuses/update', params, callback)
 	}
@@ -171,6 +171,7 @@ var searchAndTweet = function (callbackWhenDone) {
 		usernameArray = userArray;
 		// 1. For each 'trigger'
 		getTriggers(function (err, triggers) {
+			console.log('Triggers:', triggers.length);
 			async.each(triggers, processTrigger, callbackWhenDone);
 		});
 	});
