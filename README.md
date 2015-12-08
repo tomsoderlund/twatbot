@@ -2,6 +2,7 @@
 
 The smart Twitter bot.
 
+
 ## Features
 
 **Implemented:**
@@ -13,6 +14,7 @@ The smart Twitter bot.
 * Save list of Twitter usernames so you don’t tweet same person twice.
 * Have a time limit for tweets.
 
+
 ## How to run
 
 Just start with:
@@ -21,10 +23,14 @@ Just start with:
 
 	node app.js
 
-Server will default to **http://localhost:3009**
 
 ## Usage
 
+Can be used with a scheduler:
+
+https://devcenter.heroku.com/articles/scheduler
+
+
 ## Implementation
 
-Built on Yeoman Express.
+Node.js, Twit

@@ -1,3 +1,6 @@
+REST API: https://dev.twitter.com/rest/public
+Search: https://support.twitter.com/articles/71577
+
 https://www.npmjs.com/package/node-twitterbot
 https://github.com/nkirby/node-twitterbot
 
