@@ -7,12 +7,14 @@ The smart Twitter bot.
 
 **Implemented:**
 
+* When someone asks a question, tweet a related reply to them.
+* Save list of Twitter usernames so you don’t tweet same person twice.
+
 **Planned:**
 
-* When someone asks a question, tweet a related reply to them.
 * When someone follows your Twitter account, send the a personalized direct message (DM).
-* Save list of Twitter usernames so you don’t tweet same person twice.
-* Have a time limit for tweets.
+* Have a time limit for tweets - not tweet too often.
+* Support for grouping triggers/reply messages in "topics".
 
 
 ## How to run
