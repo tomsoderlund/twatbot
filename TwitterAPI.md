@@ -1,6 +1,8 @@
 https://www.npmjs.com/package/node-twitterbot
 https://github.com/nkirby/node-twitterbot
 
+https://github.com/ttezel/twit
+
 https://github.com/istrategylabs/node-twitter for DM’s?
 
 http://videlais.com/2014/12/16/creating-a-basic-twitter-bot-in-node-js/
