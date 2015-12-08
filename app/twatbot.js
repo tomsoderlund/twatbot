@@ -61,11 +61,14 @@ var postTweet = function (message, replyToStatusObj, sendForReal) {
 
 module.exports = {
 
-	start: function () {
+	start: function (callback) {
 		console.log('START');
 
 		searchTweets('squarespace');
 		//postTweet('Hunry!', undefined, true)
+		
+		if (callback)
+			callback();
 
 	}
 

@@ -3,8 +3,7 @@ var glob = require('glob');
 var config = require('./config/config');
 
 mongoose.connect(config.db);
-var db = mongoose.connection;
-db.on('error', function () {
+mongoose.connection.on('error', function () {
 	throw new Error('unable to connect to database at ' + config.db);
 });
 
@@ -14,4 +13,7 @@ models.forEach(function (model) {
 });
 
 var twatbot = require('./app/twatbot');
-twatbot.start();
+
+twatbot.start(function () {
+	mongoose.connection.close();
+});
