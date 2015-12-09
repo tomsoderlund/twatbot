@@ -48,7 +48,11 @@ var postTweet = function (message, replyToStatusObj, callback) {
 		params.in_reply_to_status_id = replyToStatusObj.id_str;
 	}
 	// Tweet!
-	console.log('Tweet: ' + (TWATBOT_DEBUG ? '(test)' : '(LIVE)'), '“' + params.status + '”');
+	console.log(
+		'Tweet: ' + (TWATBOT_DEBUG ? '(test)' : '(LIVE)'),
+		'“' + params.status + '”',
+		'- reply to @' + replyToStatusObj.user.screen_name + ': “' + replyToStatusObj.text + '” ' + makeTweetURL(replyToStatusObj)
+	);
 	if (!TWATBOT_DEBUG) {
 		twitObj.post('statuses/update', params, function (err, data, response) {
 			callback(err, data);
