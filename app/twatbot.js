@@ -55,11 +55,14 @@ var searchAndTweet = function (callbackWhenDone) {
 	// 5. Send them a tweet
 	// 6. Save user, trigger, and message objects
 
-	var saveOptions = function (userObj, trigger, messageObj, cbAfterSave) {
+	var saveOptions = function (userObj, trigger, messageObj, newTweetObj, cbAfterSave) {
 		async.parallel([
 			// User
 			function (cb) {
-				var user = new User({ screen_name: userObj.screen_name });
+				var user = new User({
+					screen_name: userObj.screen_name,
+					lastSentTweetId: newTweetObj.id_str
+				});
 				user.save(cb);
 			},
 			// Trigger
@@ -105,9 +108,9 @@ var searchAndTweet = function (callbackWhenDone) {
 					}
 					// 5. Send them a tweet
 					twitterHelper.postTweet(personalMessage, replyToStatusObj,
-						function (err, data) {
+						function (err, newTweetObj) {
 							// 6. Save user, trigger, and message objects
-							saveOptions(replyToStatusObj.user, trigger, messageObj, cbAfterSend);
+							saveOptions(replyToStatusObj.user, trigger, messageObj, newTweetObj, cbAfterSend);
 						}
 					);
 				}
@@ -124,6 +127,7 @@ var searchAndTweet = function (callbackWhenDone) {
 			var alreadySentToOneUser = false;
 			async.each(tweets, function (tweet, cbEach) {
 				if (usernameArray.indexOf(tweet.user.screen_name) === -1 && !alreadySentToOneUser) {
+					console.log('Read: @' + tweet.user.screen_name + ': “' + tweet.text + '” - ' + twitterHelper.makeTweetURL(tweet));
 					sendMessageAndUpdateRecords(trigger, tweet, cbEach);
 					alreadySentToOneUser = true;
 				}

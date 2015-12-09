@@ -15,8 +15,10 @@ The smart Twitter bot.
 
 **Planned:**
 
+* Follow users based on search.
+* Scale user list - not keep big array in memory.
 * Use "enabled" flag on triggers/messages.
-* Personalize sent messages.
+* Personalize sent messages: real name, location, tools, words used.
 * When someone follows your Twitter account, send the a personalized direct message (DM).
 * Have a time limit for tweets - not tweet too often.
 

@@ -20,6 +20,10 @@ var triggerOnDirectMessage = function () {
 	// });
 }
 
+var makeTweetURL = function (tweetObj) {
+	return 'https://twitter.com/' + tweetObj.user.screen_name + '/status/' + tweetObj.id_str;
+};
+
 // https://support.twitter.com/articles/71577
 var searchTweets = function (searchStr, options, callback) {
 	// sinceDate = sinceDate || 
@@ -44,12 +48,14 @@ var postTweet = function (message, replyToStatusObj, callback) {
 		params.in_reply_to_status_id = replyToStatusObj.id_str;
 	}
 	// Tweet!
-	console.log('Tweet: ' + (TWATBOT_DEBUG ? '(test)' : '(LIVE)'), '“' + params.status + '”' + (replyToStatusObj ? ' - reply to @' + replyToStatusObj.user.screen_name + ':“' + replyToStatusObj.text + '” https://twitter.com/' + replyToStatusObj.user.screen_name + '/status/' + replyToStatusObj.id_str : ''));
+	console.log('Tweet: ' + (TWATBOT_DEBUG ? '(test)' : '(LIVE)'), '“' + params.status + '”');
 	if (!TWATBOT_DEBUG) {
-		twitObj.post('statuses/update', params, callback)
+		twitObj.post('statuses/update', params, function (err, data, response) {
+			callback(err, data);
+		});
 	}
 	else {
-		callback(null);
+		callback(null, { id_str: '(debug)' });
 	}
 };
 
@@ -61,7 +67,7 @@ module.exports = {
 
 		if (!process.env['TWITTER_CONSUMER_KEY']) {
 			console.error('Twitter settings not found in environment.');
-			cbAfterInit('No settings');
+			if (cbAfterInit) cbAfterInit('No settings');
 		}
 		else {
 			twitObj = new Twit({
@@ -73,11 +79,12 @@ module.exports = {
 
 			console.log('TWATBOT_DEBUG:', TWATBOT_DEBUG);
 			console.log('TWATBOT_SEARCH_LIMIT:', TWATBOT_SEARCH_LIMIT);
-			cbAfterInit(null);
+			if (cbAfterInit) cbAfterInit(null);
 		}
 
 	},
 
+	makeTweetURL: makeTweetURL,
 	searchTweets: searchTweets,
 	postTweet: postTweet,
 
