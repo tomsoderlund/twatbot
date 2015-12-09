@@ -20,7 +20,11 @@ var triggerOnDirectMessage = function () {
 	// });
 }
 
-var makeTweetURL = function (tweetObj) {
+var formatTweet = function (tweetObj) {
+	return '@' + tweetObj.user.screen_name + ': “' + tweetObj.text + '”';
+};
+
+var formatTweetURL = function (tweetObj) {
 	return 'https://twitter.com/' + tweetObj.user.screen_name + '/status/' + tweetObj.id_str;
 };
 
@@ -51,7 +55,7 @@ var postTweet = function (message, replyToStatusObj, callback) {
 	console.log(
 		'Tweet: ' + (TWATBOT_DEBUG ? '(test)' : '(LIVE)'),
 		'“' + params.status + '”',
-		'- reply to @' + replyToStatusObj.user.screen_name + ': “' + replyToStatusObj.text + '” ' + makeTweetURL(replyToStatusObj)
+		'- reply to ' + formatTweet(replyToStatusObj) + '; ' + formatTweetURL(replyToStatusObj)
 	);
 	if (!TWATBOT_DEBUG) {
 		twitObj.post('statuses/update', params, function (err, data, response) {
@@ -61,6 +65,20 @@ var postTweet = function (message, replyToStatusObj, callback) {
 	else {
 		callback(null, { id_str: '(debug)' });
 	}
+};
+
+var makeTweetFavorite = function (tweetObj, callback) {
+	console.log('Favorite: ' + formatTweet(tweetObj) + '; ' + formatTweetURL(tweetObj));
+	twitObj.post('favorites/create', { id: tweetObj.id_str }, function (err, data, response) {
+		callback(err, data);
+	});
+};
+
+var followUser = function (userObj, callback) {
+	console.log('Follow: ' + '@' + userObj.screen_name);
+	twitObj.post('friendships/create', { screen_name: userObj.screen_name }, function (err, data, response) {
+		callback(err, data);
+	});
 };
 
 //------ PUBLIC METHODS ------
@@ -88,8 +106,11 @@ module.exports = {
 
 	},
 
-	makeTweetURL: makeTweetURL,
+	formatTweet: formatTweet,
+	formatTweetURL: formatTweetURL,
 	searchTweets: searchTweets,
 	postTweet: postTweet,
+	makeTweetFavorite: makeTweetFavorite,
+	followUser: followUser,
 
 }
