@@ -21,11 +21,17 @@ var triggerOnDirectMessage = function () {
 }
 
 var formatTweet = function (tweetObj) {
-	return '@' + tweetObj.user.screen_name + ': “' + tweetObj.text + '”';
+	if (tweetObj)
+		return '@' + tweetObj.user.screen_name + ': “' + tweetObj.text + '”';
+	else
+		return '';
 };
 
 var formatTweetURL = function (tweetObj) {
-	return 'https://twitter.com/' + tweetObj.user.screen_name + '/status/' + tweetObj.id_str;
+	if (tweetObj)
+		return 'https://twitter.com/' + tweetObj.user.screen_name + '/status/' + tweetObj.id_str;
+	else
+		return '';
 };
 
 // https://support.twitter.com/articles/71577

@@ -179,6 +179,10 @@ module.exports = {
 		],
 		cbAfterRun);
 
+		// Send 1 tweet test
+		// twitterHelper.init();
+		// twitterHelper.postTweet("Ho\nHo\nHo", undefined, cbAfterRun);
+
 	}
 
 }
