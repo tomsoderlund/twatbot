@@ -12,15 +12,16 @@ The smart Twitter bot.
 * Support for grouping triggers/reply messages in "topics".
 * Config in ENV variables.
 * Support for questions - "?" in tweet.
+* Follow users based on search.
+* Favorite tweets based on search.
 
 **Planned:**
 
-* Follow users based on search.
 * Scale user list - not keep big array in memory.
 * Use "enabled" flag on triggers/messages.
 * Personalize sent messages: real name, location, tools, words used.
 * When someone follows your Twitter account, send the a personalized direct message (DM).
-* Have a time limit for tweets - not tweet too often.
+* Time limit for tweets - tweet at random times, and not too often.
 
 
 ## Usage
