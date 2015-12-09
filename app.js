@@ -14,6 +14,6 @@ models.forEach(function (model) {
 
 var twatbot = require('./app/twatbot');
 
-twatbot.start(function () {
+twatbot.start(function (err) {
 	mongoose.connection.close();
 });

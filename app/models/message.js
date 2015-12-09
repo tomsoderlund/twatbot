@@ -10,6 +10,7 @@ var MessageSchema = new Schema({
 	text: { type: String, required: true, unique: true },
 	enabled: { type: Boolean, default: true },
 	topic: { type: String }, // any string, limit to Trigger:s on this topic
+	dateFirstUsed: { type: Date },
 	dateLastUsed: { type: Date },
 	usedCount: { type: Number, default: 0 },
 });
