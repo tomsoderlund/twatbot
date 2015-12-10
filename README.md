@@ -14,10 +14,12 @@ The smart Twitter bot.
 * Support for questions - "?" in tweet.
 * Follow users based on search.
 * Favorite tweets based on search.
+* Scale user list - not keep big array in memory.
 
 **Planned:**
 
-* Scale user list - not keep big array in memory.
+* Don't repeat same message two times in a row.
+* Have some triggers that only follow, doesn't tweet.
 * Use "enabled" flag on triggers/messages.
 * Personalize sent messages: real name, location, tools, words used.
 * When someone follows your Twitter account, send the a personalized direct message (DM).

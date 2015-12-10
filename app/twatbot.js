@@ -16,12 +16,12 @@ var getTriggers = function (callback) {
 	Trigger.find({}).exec(callback);
 };
 
-var getExistingUsernames = function (callback) {
+var isUserWhitelisted = function (userObj, callback) {
 	// var user = new User({ screen_name: "tomsoderlund" });
 	// user.save();
-	User.find({}).exec(function (err, users) {
-		var usernameArray = _.pluck(users, 'screen_name');
-		callback(err, usernameArray);
+	User.find({ screen_name: userObj.screen_name }).exec(function (err, userData) {
+		err = (userData.length !== 0); // found = not whitelisted
+		callback(err, userData);
 	});
 };
 
@@ -134,35 +134,31 @@ var searchAndTweet = function (callbackWhenDone) {
 		);
 	};
 
-	var usernameArray;
-
 	var processTrigger = function (trigger, cbAfterTrigger) {
 		// 2. Search Twitter for trigger
 		searchTweetsByTrigger(trigger, function (err, tweets) {
 			// 3. Find first user not on the user list
 			var alreadySentToOneUser = false;
 			async.each(tweets, function (tweet, cbEach) {
-				if (usernameArray.indexOf(tweet.user.screen_name) === -1 && !alreadySentToOneUser) {
-					console.log('Read: ' + twitterHelper.formatTweet(tweet) + '; ' + twitterHelper.formatTweetURL(tweet));
-					sendMessageAndUpdateRecords(trigger, tweet, cbEach);
-					alreadySentToOneUser = true;
-				}
-				else {
-					cbEach(null);
-				}
+				isUserWhitelisted(tweet.user, function (err, tweets) {
+					if (!err && !alreadySentToOneUser) {
+						console.log('Read: ' + twitterHelper.formatTweet(tweet) + '; ' + twitterHelper.formatTweetURL(tweet));
+						sendMessageAndUpdateRecords(trigger, tweet, cbEach);
+						alreadySentToOneUser = true;
+					}
+					else {
+						cbEach(null);
+					}
+				});
 			},
 			cbAfterTrigger);
 		});
 	};
 
-	// First get array of users
-	getExistingUsernames(function (err, userArray) {
-		usernameArray = userArray;
-		// 1. For each 'trigger'
-		getTriggers(function (err, triggers) {
-			console.log('Triggers:', triggers.length);
-			async.each(triggers, processTrigger, callbackWhenDone);
-		});
+	// 1. For each 'trigger'
+	getTriggers(function (err, triggers) {
+		console.log('Triggers:', triggers.length);
+		async.each(triggers, processTrigger, callbackWhenDone);
 	});
 
 }
