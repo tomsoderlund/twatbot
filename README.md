@@ -7,19 +7,20 @@ The smart Twitter bot.
 
 **Implemented:**
 
-* When someone asks a question, tweet a related reply to them.
+* When someone asks a question, tweet a related reply to them (limit: TWATBOT_TWEETS_PER_TRIGGER).
 * Save list of Twitter usernames so you don’t tweet same person twice.
 * Support for grouping triggers/reply messages in "topics".
 * Config in ENV variables.
 * Support for questions - "?" in tweet.
-* Follow users based on search.
+* Follow users based on search (limit: TWATBOT_FOLLOWING_PER_SESSION).
 * Favorite tweets based on search.
 * Scale user list - not keep big array in memory.
+* Don't repeat same message two times in a row.
+* Tweet at random times (environment: TWATBOT_REPLY_TIME_MAX_SECONDS).
+* Have some triggers that only follow, doesn't tweet (set topic "follow-only" on trigger).
 
 **Planned:**
 
-* Don't repeat same message two times in a row.
-* Have some triggers that only follow, doesn't tweet.
 * Use "enabled" flag on triggers/messages.
 * Personalize sent messages: real name, location, tools, words used.
 * When someone follows your Twitter account, send the a personalized direct message (DM).

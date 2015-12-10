@@ -11,6 +11,8 @@ var Trigger = mongoose.model('Trigger');
 var Message = mongoose.model('Message');
 
 var TWATBOT_TWEETS_PER_TRIGGER = (process.env['TWATBOT_TWEETS_PER_TRIGGER']  ? parseInt(process.env['TWATBOT_TWEETS_PER_TRIGGER']) : 1);
+var TWATBOT_FOLLOWING_PER_SESSION = (process.env['TWATBOT_FOLLOWING_PER_SESSION']  ? parseInt(process.env['TWATBOT_FOLLOWING_PER_SESSION']) : 10);
+var TWATBOT_REPLY_TIME_MAX_SECONDS = (process.env['TWATBOT_REPLY_TIME_MAX_SECONDS']  ? parseInt(process.env['TWATBOT_REPLY_TIME_MAX_SECONDS']) : 30);
 
 var getTriggers = function (callback) {
 	// var trig = new Trigger({ text: "from:tomsoderlund" });
@@ -100,7 +102,10 @@ var searchAndTweet = function (callbackWhenDone) {
 			trigger.topic,
 			replyToStatusObj,
 			function (err, messageObj) {
-				if (!err) {
+				if (err) {
+					cbAfterSend(null);
+				}
+				else {
 					// Personalize message
 					if (messageObj.text.indexOf('{{screen_name}}') !== -1) {
 						// {{screen_name}} is in template
@@ -122,6 +127,8 @@ var searchAndTweet = function (callbackWhenDone) {
 		);
 	};
 
+	var followedUsersThisSession = 0;
+
 	var processTrigger = function (trigger, cbAfterTrigger) {
 		// 2. Search Twitter for trigger
 		searchTweetsByTrigger(trigger, function (err, tweets) {
@@ -133,7 +140,13 @@ var searchAndTweet = function (callbackWhenDone) {
 				async.parallel([
 					// Follow user
 					function (cb) {
-						twitterHelper.followUser(tweet.user, cb);
+						if (!err && followedUsersThisSession < TWATBOT_FOLLOWING_PER_SESSION) {
+							followedUsersThisSession++;
+							twitterHelper.followUser(tweet.user, cb);
+						}
+						else {
+							cb(null);
+						}
 					},
 					// Favorite the tweet
 					function (cb) {
@@ -143,11 +156,17 @@ var searchAndTweet = function (callbackWhenDone) {
 					function (cb) {
 						isUserWhitelisted(tweet.user, function (err, tweets) {
 							if (!err && tweetsSentForThisTrigger < TWATBOT_TWEETS_PER_TRIGGER) {
-								sendMessageAndUpdateRecords(trigger, tweet, cb);
 								tweetsSentForThisTrigger++;
+								// Randomize time for sending tweet
+								setTimeout(
+									function () {
+										sendMessageAndUpdateRecords(trigger, tweet, cb);
+									},
+									Math.floor(Math.random() * TWATBOT_REPLY_TIME_MAX_SECONDS * 1000)
+								);
 							}
 							else {
-								cbEachTweet(null);
+								cb(null);
 							}
 						});
 					},
@@ -163,6 +182,7 @@ var searchAndTweet = function (callbackWhenDone) {
 
 	// 1. For each 'trigger'
 	getTriggers(function (err, triggers) {
+		followedUsersThisSession = 0;
 		console.log('Triggers:', triggers.length);
 		async.each(triggers, processTrigger, callbackWhenDone);
 	});
