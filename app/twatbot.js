@@ -12,6 +12,7 @@ var Message = mongoose.model('Message');
 
 var TWATBOT_TWEETS_PER_TRIGGER = (process.env['TWATBOT_TWEETS_PER_TRIGGER']  ? parseInt(process.env['TWATBOT_TWEETS_PER_TRIGGER']) : 1);
 var TWATBOT_FOLLOWING_PER_SESSION = (process.env['TWATBOT_FOLLOWING_PER_SESSION']  ? parseInt(process.env['TWATBOT_FOLLOWING_PER_SESSION']) : 10);
+var TWATBOT_FAVORITES_PER_SESSION = (process.env['TWATBOT_FAVORITES_PER_SESSION']  ? parseInt(process.env['TWATBOT_FAVORITES_PER_SESSION']) : 10);
 var TWATBOT_REPLY_TIME_MAX_SECONDS = (process.env['TWATBOT_REPLY_TIME_MAX_SECONDS']  ? parseInt(process.env['TWATBOT_REPLY_TIME_MAX_SECONDS']) : 30);
 
 var getTriggers = function (callback) {
@@ -128,6 +129,7 @@ var searchAndTweet = function (callbackWhenDone) {
 	};
 
 	var followedUsersThisSession = 0;
+	var favoritedTweetsThisSession = 0;
 
 	var processTrigger = function (trigger, cbAfterTrigger) {
 		// 2. Search Twitter for trigger
@@ -136,7 +138,7 @@ var searchAndTweet = function (callbackWhenDone) {
 			var tweetsSentForThisTrigger = 0;
 			async.each(tweets, function (tweet, cbEachTweet) {
 				// For each tweet found:
-				console.log('Read: ' + twitterHelper.formatTweet(tweet) + '; ' + twitterHelper.formatTweetURL(tweet));
+				//console.log('Read: ' + twitterHelper.formatTweet(tweet) + '; ' + twitterHelper.formatTweetURL(tweet));
 				async.parallel([
 					// Follow user
 					function (cb) {
@@ -150,7 +152,13 @@ var searchAndTweet = function (callbackWhenDone) {
 					},
 					// Favorite the tweet
 					function (cb) {
-						twitterHelper.makeTweetFavorite(tweet, cb);
+						if (!err && favoritedTweetsThisSession < TWATBOT_FAVORITES_PER_SESSION) {
+							favoritedTweetsThisSession++;
+							twitterHelper.makeTweetFavorite(tweet, cb);
+						}
+						else {
+							cb(null);
+						}
 					},
 					// Send a reply - if conditions
 					function (cb) {
@@ -183,6 +191,7 @@ var searchAndTweet = function (callbackWhenDone) {
 	// 1. For each 'trigger'
 	getTriggers(function (err, triggers) {
 		followedUsersThisSession = 0;
+		favoritedTweetsThisSession = 0;
 		console.log('Triggers:', triggers.length);
 		async.each(triggers, processTrigger, callbackWhenDone);
 	});
