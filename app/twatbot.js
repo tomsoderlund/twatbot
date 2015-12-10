@@ -10,6 +10,8 @@ var User = mongoose.model('User');
 var Trigger = mongoose.model('Trigger');
 var Message = mongoose.model('Message');
 
+var TWATBOT_TWEETS_PER_TRIGGER = (process.env['TWATBOT_TWEETS_PER_TRIGGER']  ? parseInt(process.env['TWATBOT_TWEETS_PER_TRIGGER']) : 1);
+
 var getTriggers = function (callback) {
 	// var trig = new Trigger({ text: "from:tomsoderlund" });
 	// trig.save();
@@ -32,7 +34,10 @@ var getRandomMessageForTopic = function (topic, replyToStatusObj, callback) {
 	// message.save();
 	Message.find({ topic: topic, text: { $ne: lastMessageUsed } }).exec(function (err, messages) {
 		var messageObj = messages[Math.floor(Math.random() * messages.length)];
-		lastMessageUsed = messageObj.text;
+		err = (messages.length === 0); // no matching messages found -> error
+		if (messageObj) {
+			lastMessageUsed = messageObj.text;
+		}
 		callback(err, messageObj);
 	});
 };
@@ -95,11 +100,7 @@ var searchAndTweet = function (callbackWhenDone) {
 			trigger.topic,
 			replyToStatusObj,
 			function (err, messageObj) {
-				if (err) {
-					console.error('sendMessageAndUpdateRecords:', err);
-					cbAfterSend(err);
-				}
-				else {
+				if (!err) {
 					// Personalize message
 					if (messageObj.text.indexOf('{{screen_name}}') !== -1) {
 						// {{screen_name}} is in template
@@ -112,24 +113,8 @@ var searchAndTweet = function (callbackWhenDone) {
 					// 5. Send them a tweet
 					twitterHelper.postTweet(personalMessage, replyToStatusObj,
 						function (err, newTweetObj) {
-							async.parallel([
-								// 6. Save user, trigger, and message objects
-								function (cb) {
-									saveOptions(replyToStatusObj.user, trigger, messageObj, newTweetObj, cb);
-								},
-								// Follow user
-								function (cb) {
-									twitterHelper.followUser(replyToStatusObj.user, cb);
-								},
-								// Favorite the tweet
-								function (cb) {
-									twitterHelper.makeTweetFavorite(replyToStatusObj, cb);
-								},
-							],
-							// When all done
-							function (err, results) {
-								cbAfterSend(null);
-							});
+							// 6. Save user, trigger, and message objects
+							saveOptions(replyToStatusObj.user, trigger, messageObj, newTweetObj, cbAfterSend);
 						}
 					);
 				}
@@ -141,17 +126,35 @@ var searchAndTweet = function (callbackWhenDone) {
 		// 2. Search Twitter for trigger
 		searchTweetsByTrigger(trigger, function (err, tweets) {
 			// 3. Find first user not on the user list
-			var alreadySentToOneUser = false;
-			async.each(tweets, function (tweet, cbEach) {
-				isUserWhitelisted(tweet.user, function (err, tweets) {
-					if (!err && !alreadySentToOneUser) {
-						console.log('Read: ' + twitterHelper.formatTweet(tweet) + '; ' + twitterHelper.formatTweetURL(tweet));
-						sendMessageAndUpdateRecords(trigger, tweet, cbEach);
-						alreadySentToOneUser = true;
-					}
-					else {
-						cbEach(null);
-					}
+			var tweetsSentForThisTrigger = 0;
+			async.each(tweets, function (tweet, cbEachTweet) {
+				// For each tweet found:
+				console.log('Read: ' + twitterHelper.formatTweet(tweet) + '; ' + twitterHelper.formatTweetURL(tweet));
+				async.parallel([
+					// Follow user
+					function (cb) {
+						twitterHelper.followUser(tweet.user, cb);
+					},
+					// Favorite the tweet
+					function (cb) {
+						twitterHelper.makeTweetFavorite(tweet, cb);
+					},
+					// Send a reply - if conditions
+					function (cb) {
+						isUserWhitelisted(tweet.user, function (err, tweets) {
+							if (!err && tweetsSentForThisTrigger < TWATBOT_TWEETS_PER_TRIGGER) {
+								sendMessageAndUpdateRecords(trigger, tweet, cb);
+								tweetsSentForThisTrigger++;
+							}
+							else {
+								cbEachTweet(null);
+							}
+						});
+					},
+				],
+				// When all done
+				function (err, results) {
+					cbEachTweet(null);
 				});
 			},
 			cbAfterTrigger);
