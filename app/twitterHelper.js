@@ -78,11 +78,16 @@ var postTweet = function (message, replyToStatusObj, callback) {
 };
 
 var makeTweetFavorite = function (tweetObj, callback) {
-	console.log('Favorite: ' + formatLiveDebugFlag() + ' ' + formatTweet(tweetObj) + '; ' + formatTweetURL(tweetObj));
-	if (!TWATBOT_DEBUG) {
-		twitObj.post('favorites/create', { id: tweetObj.id_str }, function (err, data, response) {
-			callback(err, data);
-		});
+	if (!tweetObj.favorited) {
+		console.log('Favorite: ' + formatLiveDebugFlag() + ' ' + formatTweet(tweetObj) + '; ' + formatTweetURL(tweetObj));
+		if (!TWATBOT_DEBUG) {
+			twitObj.post('favorites/create', { id: tweetObj.id_str }, function (err, data, response) {
+				callback(err, data);
+			});
+		}
+		else {
+			callback(null);
+		}
 	}
 	else {
 		callback(null);
@@ -90,11 +95,16 @@ var makeTweetFavorite = function (tweetObj, callback) {
 };
 
 var followUser = function (userObj, callback) {
-	console.log('Follow: ' + formatLiveDebugFlag() + ' @' + userObj.screen_name);
-	if (!TWATBOT_DEBUG) {
-		twitObj.post('friendships/create', { screen_name: userObj.screen_name }, function (err, data, response) {
-			callback(err, data);
-		});
+	if (!userObj.following) {
+		console.log('Follow: ' + formatLiveDebugFlag() + ' @' + userObj.screen_name);
+		if (!TWATBOT_DEBUG) {
+			twitObj.post('friendships/create', { screen_name: userObj.screen_name }, function (err, data, response) {
+				callback(err, data);
+			});
+		}
+		else {
+			callback(null);
+		}
 	}
 	else {
 		callback(null);
