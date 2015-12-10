@@ -117,18 +117,17 @@ var searchAndTweet = function (callbackWhenDone) {
 					// Personalize message
 					if (messageObj.text.indexOf('{{screen_name}}') !== -1) {
 						// {{screen_name}} is in template
-						var personalMessage = messageObj.text.replace(/{{screen_name}}/g, '@' + replyToStatusObj.user.screen_name);
+						var messageText = messageObj.text.replace(/{{screen_name}}/g, '@' + replyToStatusObj.user.screen_name);
 					}
 					else {
 						// {{screen_name}} NOT in template
-						var personalMessage = '@' + replyToStatusObj.user.screen_name + ' ' + messageObj.text;
+						var messageText = '@' + replyToStatusObj.user.screen_name + ' ' + messageObj.text;
 					}
 					// 5. Send them a tweet
-						function (err, newTweetObj) {
-							// 6. Save user, trigger, and message objects
-							saveOptions(replyToStatusObj.user, trigger, messageObj, newTweetObj, cbAfterSend);
-						}
-					);
+					twitterHelper.postTweet(messageText, replyToStatusObj, function (err, newTweetObj) {
+						// 6. Save user, trigger, and message objects
+						saveOptions(replyToStatusObj.user, trigger, messageObj, newTweetObj, cbAfterSend);
+					});
 				}
 			}
 		);
@@ -144,8 +143,52 @@ var searchAndTweet = function (callbackWhenDone) {
 			var tweetsSentForThisTrigger = 0;
 			async.each(tweets, function (tweet, cbEachTweet) {
 				// For each tweet found:
+				isNewUser(tweet.user, function (err, tweets) {
+					if (!err) {
+						//console.log('Read: ' + twitterHelper.formatTweet(tweet) + '; ' + twitterHelper.formatTweetURL(tweet));
+						async.parallel([
+							// Follow user
+							function (cbParallel) {
+								if (!err && followedUsersThisSession < TWATBOT_FOLLOWING_PER_SESSION) {
+									followedUsersThisSession++;
+									twitterHelper.followUser(tweet.user, cbParallel);
 								}
+								else {
+									cbParallel(null);
 								}
+							},
+							// Favorite the tweet
+							function (cbParallel) {
+								if (!err && favoritedTweetsThisSession < TWATBOT_FAVORITES_PER_SESSION) {
+									favoritedTweetsThisSession++;
+									twitterHelper.makeTweetFavorite(tweet, cbParallel);
+								}
+								else {
+									cbParallel(null);
+								}
+							},
+							// Send a reply - if conditions
+							function (cbParallel) {
+								if (tweetsSentForThisTrigger < TWATBOT_TWEETS_PER_TRIGGER) {
+									tweetsSentForThisTrigger++;
+									// Randomize time for sending tweet
+									setTimeout(
+										function () {
+											sendPersonalMessage(trigger, tweet, cbParallel);
+										},
+										Math.floor(Math.random() * TWATBOT_REPLY_TIME_MAX_SECONDS * 1000)
+									);
+								}
+								else {
+									cbParallel(null);
+								};
+							},
+						],
+						// When all done
+						function (err, results) {
+							saveUser(tweet.user, cbEachTweet);
+						});						
+					}
 				});
 			},
 			cbAfterTrigger);
