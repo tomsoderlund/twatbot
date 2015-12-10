@@ -9,6 +9,7 @@ var findOrCreate = require('mongoose-findorcreate');
 var MessageSchema = new Schema({
 	text: { type: String, required: true, unique: true },
 	enabled: { type: Boolean, default: true },
+	language: { type: String }, // e.g. 'en', 'fr'
 	topic: { type: String }, // any string, limit to Trigger:s on this topic
 	dateFirstUsed: { type: Date },
 	dateLastUsed: { type: Date },
