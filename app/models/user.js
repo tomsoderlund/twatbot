@@ -7,7 +7,8 @@ var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
 	screen_name: { type: String, required: true, unique: true },
-	dateLastSent: { type: Date, default: Date.now },
+	dateLastUsed: { type: Date, default: Date.now },
+	dateLastSent: { type: Date },
 	lastSentTweetId: { type: String },
 });
 
