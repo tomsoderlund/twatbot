@@ -25,11 +25,14 @@ var isUserWhitelisted = function (userObj, callback) {
 	});
 };
 
+var lastMessageUsed = "";
+
 var getRandomMessageForTopic = function (topic, replyToStatusObj, callback) {
 	// var message = new Message({ text: "Have you tried Weld? https://www.weld.io?utm_content=tweet-tried-weld" });
 	// message.save();
-	Message.find({ topic: topic }).exec(function (err, messages) {
+	Message.find({ topic: topic, text: { $ne: lastMessageUsed } }).exec(function (err, messages) {
 		var messageObj = messages[Math.floor(Math.random() * messages.length)];
+		lastMessageUsed = messageObj.text;
 		callback(err, messageObj);
 	});
 };
