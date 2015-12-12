@@ -71,7 +71,12 @@ var searchTweetsByTrigger = function (trigger, callback) {
 
 var updateUser = function (userScreenName, properties, cbAfterSave) {
 	//console.log('Save: @' + userScreenName, properties);
-	User.update({ screen_name: userScreenName }, properties, { upsert: true }, cbAfterSave);
+	User.update({ screen_name: userScreenName }, properties, { upsert: true }, function (err, data) {
+		if (properties.hasOwnProperty('dateLastFavorited')) {
+			console.log('Save: @' + userScreenName, properties, err, data);
+		}
+		cbAfterSave(err, data);
+	});
 };
 
 var saveOptions = function (trigger, messageObj, cbAfterSave) {
