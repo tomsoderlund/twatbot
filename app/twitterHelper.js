@@ -1,8 +1,8 @@
 'use strict';
 
-var Twit = require('twit') // https://github.com/ttezel/twit
-//var TwitterBot = require("node-twitterbot").TwitterBot; // https://github.com/nkirby/node-twitterbot
+var _ = require('lodash');
 
+var Twit = require('twit') // https://github.com/ttezel/twit
 var twitObj;
 
 var TWATBOT_DEBUG = (process.env['TWATBOT_DEBUG'] === 'false' ? false : true);
@@ -111,6 +111,32 @@ var followUser = function (userObj, callback) {
 	}
 };
 
+var unfollowUser = function (userObj, callback) {
+	console.log('Unfollow: ' + formatLiveDebugFlag() + ' @' + userObj.screen_name);
+	if (!TWATBOT_DEBUG) {
+		twitObj.post('friendships/destroy', { screen_name: userObj.screen_name }, function (err, data, response) {
+			callback(err, data);
+		});
+	}
+	else {
+		callback(null, userObj);
+	}
+};
+
+// friends/list, then friendships/lookup
+var getMyFriends = function (callback) {
+	var params = {
+		screen_name: process.env['TWITTER_SCREEN_NAME'],
+		count: 100
+	};
+	twitObj.get('friends/list', params, function (err, result) {
+		var userNames = _.pluck(result.users, 'screen_name');
+		twitObj.get('friendships/lookup', { screen_name: userNames.join(',') }, function (err, friends) {
+			callback(err, friends);
+		})
+	})
+}
+
 //------ PUBLIC METHODS ------
 
 module.exports = {
@@ -142,5 +168,7 @@ module.exports = {
 	postTweet: postTweet,
 	makeTweetFavorite: makeTweetFavorite,
 	followUser: followUser,
+	unfollowUser: unfollowUser,
+	getMyFriends: getMyFriends,
 
 }

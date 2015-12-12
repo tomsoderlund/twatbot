@@ -18,6 +18,7 @@ The smart Twitter bot.
 * Don't repeat same message two times in a row.
 * Tweet at random times (environment: TWATBOT_REPLY_TIME_MAX_SECONDS).
 * Have some triggers that only follow, doesn't tweet (set topic "follow-only" on trigger).
+* Unfollow non-followers automatically.
 
 **Planned:**
 

@@ -11,8 +11,9 @@ var Trigger = mongoose.model('Trigger');
 var Message = mongoose.model('Message');
 
 var TWATBOT_SEND_TWEETS_LIMIT = (process.env['TWATBOT_SEND_TWEETS_LIMIT']  ? parseInt(process.env['TWATBOT_SEND_TWEETS_LIMIT']) : 1);
-var TWATBOT_FOLLOWING_LIMIT = (process.env['TWATBOT_FOLLOWING_LIMIT']  ? parseInt(process.env['TWATBOT_FOLLOWING_LIMIT']) : 3);
-var TWATBOT_FAVORITES_LIMIT = (process.env['TWATBOT_FAVORITES_LIMIT']  ? parseInt(process.env['TWATBOT_FAVORITES_LIMIT']) : 3);
+var TWATBOT_FOLLOWING_LIMIT = (process.env['TWATBOT_FOLLOWING_LIMIT']  ? parseInt(process.env['TWATBOT_FOLLOWING_LIMIT']) : 2);
+var TWATBOT_UNFOLLOWING_LIMIT = (process.env['TWATBOT_UNFOLLOWING_LIMIT']  ? parseInt(process.env['TWATBOT_UNFOLLOWING_LIMIT']) : 2);
+var TWATBOT_FAVORITES_LIMIT = (process.env['TWATBOT_FAVORITES_LIMIT']  ? parseInt(process.env['TWATBOT_FAVORITES_LIMIT']) : 2);
 var TWATBOT_REPLY_TIME_MAX_SECONDS = (process.env['TWATBOT_REPLY_TIME_MAX_SECONDS']  ? parseInt(process.env['TWATBOT_REPLY_TIME_MAX_SECONDS']) : 30);
 
 var getTriggers = function (callback) {
@@ -222,6 +223,25 @@ var searchAndTweet = function (callbackWhenDone) {
 
 }
 
+var unfollowNonFollowers = function (callbackWhenDone) {
+	async.waterfall([
+		// 1. Get friend list
+		twitterHelper.getMyFriends,
+		// 2. Find unfollowers
+		function (friends, cbWaterfall) {
+			var nonFollowers = _.filter(friends, function (friend) {
+				// If the friend doesn't have followed by
+				return friend.connections.indexOf('followed_by') === -1;
+			});
+			cbWaterfall(null, _.slice(nonFollowers, 0, TWATBOT_UNFOLLOWING_LIMIT));
+		},
+		// 3. Unfriend them
+		function (users, cbWaterfall) {
+			async.each(users, twitterHelper.unfollowUser, cbWaterfall);
+		}
+	], callbackWhenDone);
+};
+
 //------ PUBLIC METHODS ------
 
 module.exports = {
@@ -234,12 +254,14 @@ module.exports = {
 				cbSeries(null);				
 			},
 			twitterHelper.init,
-			searchAndTweet
+			searchAndTweet,
+			unfollowNonFollowers,
 		],
 		cbAfterRun);
 
 		// Send 1 tweet test
 		// twitterHelper.init();
+		// unfollowNonFollowers(cbAfterRun);
 		// twitterHelper.postTweet("Ho\nHo\nHo", undefined, cbAfterRun);
 
 	}
