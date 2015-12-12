@@ -49,7 +49,7 @@ var lastMessageUsed = "";
 var getRandomMessageForTopic = function (topic, replyToStatusObj, callback) {
 	Message.find({ topic: topic, text: { $ne: lastMessageUsed } }).exec(function (err, messages) {
 		var messageObj = messages[Math.floor(Math.random() * messages.length)];
-		err = (messages.length === 0); // no matching messages found -> error
+		err = (messages.length === 0 ? 'no matching message' : null); // no matching messages found -> error
 		if (messageObj) {
 			lastMessageUsed = messageObj.text;
 		}
@@ -114,7 +114,7 @@ var sendPersonalMessage = function (trigger, replyToStatusObj, cbAfterSend) {
 		replyToStatusObj,
 		function (err, messageObj) {
 			if (err) {
-				cbAfterSend(null, null);
+				cbAfterSend(err, null);
 			}
 			else {
 				// Personalize message
