@@ -166,7 +166,9 @@ var processTrigger = function (trigger, cbAfterTrigger) {
 					async.each(newTweets, function (tweet, cbEachTweet) {
 						async.waterfall([
 							function (cbWaterfall) {
-								twitterHelper.makeTweetFavorite(tweet, cbWaterfall);
+								twitterHelper.makeTweetFavorite(tweet, function (err, tweet) {
+									cbWaterfall(null, tweet); // NOTE: ignore Twitter Favorite error
+								});
 							},
 							function (favoriteData, cbWaterfall) {
 								updateUser(tweet.user.screen_name, {
