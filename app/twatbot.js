@@ -258,9 +258,15 @@ module.exports = {
 				console.log('TwatBot starting up');
 				cbSeries(null);				
 			},
+			
 			twitterHelper.init,
 			searchAndTweet,
 			unfollowNonFollowers,
+
+			function (cbSeries) {
+				console.log('TwatBot is done!');
+				cbSeries(null);				
+			},
 		],
 		cbAfterRun);
 
