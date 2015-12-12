@@ -73,7 +73,7 @@ var postTweet = function (message, replyToStatusObj, callback) {
 		});
 	}
 	else {
-		callback(null, { id_str: '(debug)' });
+		callback(null, { 'id_str': '(debug)' });
 	}
 };
 
@@ -86,11 +86,11 @@ var makeTweetFavorite = function (tweetObj, callback) {
 			});
 		}
 		else {
-			callback(null);
+			callback(null, tweetObj);
 		}
 	}
 	else {
-		callback(null);
+		callback(null, tweetObj);
 	}
 };
 
@@ -103,11 +103,11 @@ var followUser = function (userObj, callback) {
 			});
 		}
 		else {
-			callback(null);
+			callback(null, userObj);
 		}
 	}
 	else {
-		callback(null);
+		callback(null, userObj);
 	}
 };
 
@@ -130,7 +130,7 @@ module.exports = {
 			});
 
 			console.log('TWATBOT_DEBUG:', TWATBOT_DEBUG);
-			console.log('TWATBOT_SEARCH_LIMIT:', TWATBOT_SEARCH_LIMIT);
+
 			if (cbAfterInit) cbAfterInit(null);
 		}
 

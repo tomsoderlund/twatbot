@@ -7,9 +7,12 @@ var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
 	screen_name: { type: String, required: true, unique: true },
-	dateLastUsed: { type: Date, default: Date.now },
+	dateFollowed: { type: Date },
+	dateLastFavorited: { type: Date },
 	dateLastSent: { type: Date },
 	lastSentTweetId: { type: String },
+	lastFavoritedTweetId: { type: String },
+	triggerText: { type: String },
 });
 
 mongoose.model('User', UserSchema);

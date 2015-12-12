@@ -4,7 +4,6 @@
 
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var findOrCreate = require('mongoose-findorcreate');
 
 var MessageSchema = new Schema({
 	text: { type: String, required: true, unique: true },
@@ -15,15 +14,5 @@ var MessageSchema = new Schema({
 	dateLastUsed: { type: Date },
 	usedCount: { type: Number, default: 0 },
 });
-
-MessageSchema.plugin(findOrCreate);
-
-// MessageSchema.methods.getUserTaskIndex = function (task) {
-// 	for (var u in this.usertasks) {
-// 		if (this.usertasks[u].name === task.name)
-// 			return u;
-// 	};
-// 	return undefined;
-// };
 
 mongoose.model('Message', MessageSchema);
