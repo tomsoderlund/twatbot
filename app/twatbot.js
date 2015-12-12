@@ -97,9 +97,7 @@ var saveOptions = function (trigger, messageObj, cbAfterSave) {
 		},
 	],
 	// When all done
-	function (err, results) {
-		cbAfterSave(null);
-	});
+	cbAfterSave);
 };
 
 var doInRandomTime = function (callback) {
@@ -268,7 +266,12 @@ module.exports = {
 				cbSeries(null);				
 			},
 		],
-		cbAfterRun);
+		function (err, results) {
+			if (err) {
+				console.error('TwatBot error:', err, results);
+			}
+			cbAfterRun(err, results);
+		});
 
 		// Send 1 tweet test
 		// twitterHelper.init();
