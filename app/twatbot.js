@@ -109,7 +109,7 @@ var sendPersonalMessage = function (trigger, replyToStatusObj, cbAfterSend) {
 		replyToStatusObj,
 		function (err, messageObj) {
 			if (err) {
-				cbAfterSend(err, null);
+				cbAfterSend(null, null); // Don't propagate this error
 			}
 			else {
 				// Personalize message
