@@ -23,6 +23,7 @@ The smart Twitter bot.
 
 **Planned:**
 
+* Multi-language support.
 * Use "enabled" flag on triggers/messages.
 * Personalize sent messages: real name, location, tools, words used.
 * When someone follows your Twitter account, send the a personalized direct message (DM).

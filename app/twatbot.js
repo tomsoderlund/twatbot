@@ -251,6 +251,8 @@ var unfollowNonFollowers = function (callbackWhenDone) {
 				// If the friend doesn't have followed by
 				return friend.connections.indexOf('followed_by') === -1;
 			});
+			// Reverse to avoid unfollow recent friends
+			nonFollowers.reverse();
 			cbWaterfall(null, _.slice(nonFollowers, 0, TWATBOT_UNFOLLOWING_LIMIT));
 		},
 		// 3. Unfriend them
