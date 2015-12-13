@@ -19,10 +19,10 @@ The smart Twitter bot.
 * Tweet at random times (environment: TWATBOT_REPLY_TIME_MAX_SECONDS).
 * Have some triggers that only follow, doesn't tweet (set topic "follow-only" on trigger).
 * Unfollow non-followers automatically.
+* Check all @mentions on replied tweets and place them on userlist to avoid multi-post.
 
 **Planned:**
 
-* Check all @mentions on replied tweets and place them on userlist to avoid multi-post.
 * Use "enabled" flag on triggers/messages.
 * Personalize sent messages: real name, location, tools, words used.
 * When someone follows your Twitter account, send the a personalized direct message (DM).

@@ -69,9 +69,27 @@ var searchTweetsByTrigger = function (trigger, callback) {
 	});
 };
 
-var updateUser = function (userScreenName, properties, cbAfterSave) {
+var getScreenNamesFromString = function (str) {
+	var ary = str.match(/@([a-z\d]+)/ig);
+	for (var i in ary)
+		ary[i] = ary[i].substr(1, ary[i].length);
+	return ary;
+}
+
+var updateUser = function (userScreenName, properties, entireTweet, cbAfterSave) {
 	//console.log('Save: @' + userScreenName, properties);
-	User.update({ screen_name: userScreenName }, properties, { upsert: true }, cbAfterSave);
+	User.update({ screen_name: userScreenName }, properties, { upsert: true }, function (err, data) {
+		if (entireTweet) {
+			// Add all usernames in Tweet
+			var usernames = getScreenNamesFromString(entireTweet.text);
+			async.each(usernames, function (username, cbEach) {
+				User.update({ screen_name: username }, properties, { upsert: true }, cbEach);
+			}, cbAfterSave);
+		}
+		else {
+			cbAfterSave(err, data);
+		}
+	});
 };
 
 var saveOptions = function (trigger, messageObj, cbAfterSave) {
@@ -149,7 +167,7 @@ var processTrigger = function (trigger, cbAfterTrigger) {
 								updateUser(followData.screen_name, {
 									dateFollowed: new Date(),
 									triggerText: trigger.text
-								}, cbWaterfall);
+								}, false, cbWaterfall);
 							},
 						], cbEachUser);
 					}, cbParallel);
@@ -169,7 +187,7 @@ var processTrigger = function (trigger, cbAfterTrigger) {
 								updateUser(tweet.user.screen_name, {
 									dateLastFavorited: new Date(),
 									lastFavoritedTweetId: tweet.id_str
-								}, cbWaterfall);
+								}, false, cbWaterfall);
 							},
 						], cbEachTweet);
 					}, cbParallel);
@@ -190,7 +208,7 @@ var processTrigger = function (trigger, cbAfterTrigger) {
 									updateUser(tweet.user.screen_name, {
 										dateLastSent: new Date(),
 										lastSentTweetId: newTweet.id_str
-									}, cbWaterfall);
+									}, tweet, cbWaterfall);
 								}
 								else {
 									cbWaterfall(null);
