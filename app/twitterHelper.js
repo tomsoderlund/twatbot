@@ -48,7 +48,10 @@ var searchTweets = function (searchStr, options, callback) {
 		count: TWATBOT_SEARCH_LIMIT,
 	};
 	twitObj.get('search/tweets', params, function (err, data, response) {
-		console.log('Search:', params.q, (data.statuses ? data.statuses.length : '(none)'));
+		if (!data.statuses) {
+			data.statuses = [];
+		}
+		console.log('Search:', params.q, data.statuses.length);
 		callback(err, data.statuses);
 	})
 }
