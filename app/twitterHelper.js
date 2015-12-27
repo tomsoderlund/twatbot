@@ -102,7 +102,10 @@ var followUser = function (userObj, callback) {
 		console.log('Follow: ' + formatLiveDebugFlag() + ' @' + userObj.screen_name);
 		if (!TWATBOT_DEBUG) {
 			twitObj.post('friendships/create', { screen_name: userObj.screen_name }, function (err, data, response) {
-				callback(err, data);
+				if (err) {
+					console.log('Error following @' + userObj.screen_name + ':', err);
+				}
+				callback(null, data);
 			});
 		}
 		else {
