@@ -265,7 +265,7 @@ module.exports = {
 		async.series([
 			function (cbSeries) {
 				console.log('TwatBot starting up');
-				console.log('  config:', config.app);
+				//console.log('  config:', config.app);
 				cbSeries(null);				
 			},
 			
