@@ -39,7 +39,7 @@ var config = {
 
 	production: {
 		port: 3000,
-		db: process.env.MONGOLAB_URI || 'mongodb://localhost/twatbot-production',
+		db: process.env.MONGODB_URI || process.env.MONGOLAB_URI || 'mongodb://localhost/twatbot-production',
 	}
 
 };
