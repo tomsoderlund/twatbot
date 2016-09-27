@@ -45,6 +45,9 @@ Can be used with a scheduler: https://devcenter.heroku.com/articles/scheduler
 	heroku addons:open scheduler
 
 
+E.g. if it favorites a tweet every 10 minutes: 1 * 60/10 * 24 = 144 tweets per day.
+
+
 ## How to run
 
 Just start with:
