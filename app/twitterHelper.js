@@ -5,8 +5,7 @@ var _ = require('lodash');
 var Twit = require('twit') // https://github.com/ttezel/twit
 var twitObj;
 
-var TWATBOT_DEBUG = (process.env['TWATBOT_DEBUG'] === 'false' ? false : true);
-var TWATBOT_SEARCH_LIMIT = (process.env['TWATBOT_SEARCH_LIMIT']  ? parseInt(process.env['TWATBOT_SEARCH_LIMIT']) : 50);
+var config = require('../config/config');
 
 var triggerOnDirectMessage = function () {
 	var stream = twitObj.stream('user');
@@ -35,7 +34,7 @@ var formatTweetURL = function (tweetObj) {
 };
 
 var formatLiveDebugFlag = function () {
-	return (TWATBOT_DEBUG ? '(debug)' : '(LIVE)');
+	return (config.app.TWATBOT_DEBUG ? '(debug)' : '(LIVE)');
 };
 
 // https://support.twitter.com/articles/71577
@@ -45,7 +44,7 @@ var searchTweets = function (searchStr, options, callback) {
 	// 'banana since:2011-11-11'
 	var params = {
 		q: '“' + searchStr + '”',
-		count: TWATBOT_SEARCH_LIMIT,
+		count: config.app.TWATBOT_SEARCH_LIMIT,
 	};
 	twitObj.get('search/tweets', params, function (err, data, response) {
 		if (!data.statuses) {
@@ -70,7 +69,7 @@ var postTweet = function (message, replyToStatusObj, callback) {
 		'“' + params.status + '”',
 		'- reply to ' + formatTweet(replyToStatusObj) + '; ' + formatTweetURL(replyToStatusObj)
 	);
-	if (!TWATBOT_DEBUG) {
+	if (!config.app.TWATBOT_DEBUG) {
 		twitObj.post('statuses/update', params, function (err, data, response) {
 			callback(err, data);
 		});
@@ -83,7 +82,7 @@ var postTweet = function (message, replyToStatusObj, callback) {
 var makeTweetFavorite = function (tweetObj, callback) {
 	if (!tweetObj.favorited) {
 		console.log('Favorite: ' + formatLiveDebugFlag() + ' ' + formatTweet(tweetObj) + '; ' + formatTweetURL(tweetObj));
-		if (!TWATBOT_DEBUG) {
+		if (!config.app.TWATBOT_DEBUG) {
 			twitObj.post('favorites/create', { id: tweetObj.id_str }, function (err, data, response) {
 				callback(err, data);
 			});
@@ -100,7 +99,7 @@ var makeTweetFavorite = function (tweetObj, callback) {
 var followUser = function (userObj, callback) {
 	if (!userObj.following) {
 		console.log('Follow: ' + formatLiveDebugFlag() + ' @' + userObj.screen_name);
-		if (!TWATBOT_DEBUG) {
+		if (!config.app.TWATBOT_DEBUG) {
 			twitObj.post('friendships/create', { screen_name: userObj.screen_name }, function (err, data, response) {
 				if (err) {
 					console.log('Error following @' + userObj.screen_name + ':', err);
@@ -119,7 +118,7 @@ var followUser = function (userObj, callback) {
 
 var unfollowUser = function (userObj, callback) {
 	console.log('Unfollow: ' + formatLiveDebugFlag() + ' @' + userObj.screen_name);
-	if (!TWATBOT_DEBUG) {
+	if (!config.app.TWATBOT_DEBUG) {
 		twitObj.post('friendships/destroy', { screen_name: userObj.screen_name }, function (err, data, response) {
 			callback(err, data);
 		});
@@ -132,7 +131,7 @@ var unfollowUser = function (userObj, callback) {
 // friends/list, then friendships/lookup
 var getMyFriends = function (callback) {
 	var params = {
-		screen_name: process.env['TWITTER_SCREEN_NAME'],
+		screen_name: config.app.TWITTER_SCREEN_NAME,
 		count: 100
 	};
 	twitObj.get('friends/list', params, function (err, result) {
@@ -149,19 +148,19 @@ module.exports = {
 
 	init: function (cbAfterInit) {
 
-		if (!process.env['TWITTER_CONSUMER_KEY']) {
+		if (!config.app.TWITTER_CONSUMER_KEY) {
 			console.error('Twitter settings not found in environment.');
 			if (cbAfterInit) cbAfterInit('No settings');
 		}
 		else {
 			twitObj = new Twit({
-				"consumer_key": process.env['TWITTER_CONSUMER_KEY'],
-				"consumer_secret": process.env['TWITTER_CONSUMER_SECRET'],
-				"access_token": process.env['TWITTER_ACCESS_TOKEN'],
-				"access_token_secret": process.env['TWITTER_ACCESS_TOKEN_SECRET']
+				"consumer_key": config.app.TWITTER_CONSUMER_KEY,
+				"consumer_secret": config.app.TWITTER_CONSUMER_SECRET,
+				"access_token": config.app.TWITTER_ACCESS_TOKEN,
+				"access_token_secret": config.app.TWITTER_ACCESS_TOKEN_SECRET
 			});
 
-			console.log('TWATBOT_DEBUG:', TWATBOT_DEBUG);
+			console.log('config.app.TWATBOT_DEBUG:', config.app.TWATBOT_DEBUG);
 
 			if (cbAfterInit) cbAfterInit(null);
 		}

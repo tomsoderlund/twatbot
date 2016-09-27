@@ -4,17 +4,12 @@ var _ = require('lodash');
 var async = require('async');
 var moment = require('moment');
 var twitterHelper = require('./twitterHelper');
+var config = require('../config/config');
 
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 var Trigger = mongoose.model('Trigger');
 var Message = mongoose.model('Message');
-
-var TWATBOT_SEND_TWEETS_LIMIT = (process.env['TWATBOT_SEND_TWEETS_LIMIT']  ? parseInt(process.env['TWATBOT_SEND_TWEETS_LIMIT']) : 1);
-var TWATBOT_FOLLOWING_LIMIT = (process.env['TWATBOT_FOLLOWING_LIMIT']  ? parseInt(process.env['TWATBOT_FOLLOWING_LIMIT']) : 2);
-var TWATBOT_UNFOLLOWING_LIMIT = (process.env['TWATBOT_UNFOLLOWING_LIMIT']  ? parseInt(process.env['TWATBOT_UNFOLLOWING_LIMIT']) : 2);
-var TWATBOT_FAVORITES_LIMIT = (process.env['TWATBOT_FAVORITES_LIMIT']  ? parseInt(process.env['TWATBOT_FAVORITES_LIMIT']) : 2);
-var TWATBOT_REPLY_TIME_MAX_SECONDS = (process.env['TWATBOT_REPLY_TIME_MAX_SECONDS']  ? parseInt(process.env['TWATBOT_REPLY_TIME_MAX_SECONDS']) : 30);
 
 var getTriggers = function (callback) {
 	// var trig = new Trigger({ text: "from:tomsoderlund" });
@@ -116,7 +111,7 @@ var saveOptions = function (trigger, messageObj, cbAfterSave) {
 var doInRandomTime = function (callback) {
 	setTimeout(
 		callback,
-		Math.floor(Math.random() * TWATBOT_REPLY_TIME_MAX_SECONDS * 1000)
+		Math.floor(Math.random() * config.app.TWATBOT_REPLY_TIME_MAX_SECONDS * 1000)
 	);
 };
 
@@ -156,7 +151,7 @@ var processTrigger = function (trigger, cbAfterTrigger) {
 		async.parallel([
 			// Follow user
 			function (cbParallel) {
-				removeBlacklistedTweets(trigger, tweets, 'dateFollowed', TWATBOT_FOLLOWING_LIMIT, function (err, newTweets) {
+				removeBlacklistedTweets(trigger, tweets, 'dateFollowed', config.app.TWATBOT_FOLLOWING_LIMIT, function (err, newTweets) {
 					var usersToFollow = _.uniq(_.pluck(newTweets, 'user'));
 					async.each(usersToFollow, function (user, cbEachUser) {
 						async.waterfall([
@@ -175,7 +170,7 @@ var processTrigger = function (trigger, cbAfterTrigger) {
 			},
 			// Favorite the tweet
 			function (cbParallel) {
-				removeBlacklistedTweets(trigger, tweets, 'dateLastFavorited', TWATBOT_FAVORITES_LIMIT, function (err, newTweets) {
+				removeBlacklistedTweets(trigger, tweets, 'dateLastFavorited', config.app.TWATBOT_FAVORITES_LIMIT, function (err, newTweets) {
 					async.each(newTweets, function (tweet, cbEachTweet) {
 						async.waterfall([
 							function (cbWaterfall) {
@@ -195,7 +190,7 @@ var processTrigger = function (trigger, cbAfterTrigger) {
 			},
 			// Send a reply tweet
 			function (cbParallel) {
-				removeBlacklistedTweets(trigger, tweets, 'dateLastSent', TWATBOT_SEND_TWEETS_LIMIT, function (err, newTweets) {
+				removeBlacklistedTweets(trigger, tweets, 'dateLastSent', config.app.TWATBOT_SEND_TWEETS_LIMIT, function (err, newTweets) {
 					async.each(newTweets, function (tweet, cbEachTweet) {
 						async.waterfall([
 							function (cbWaterfall) {
@@ -253,7 +248,7 @@ var unfollowNonFollowers = function (callbackWhenDone) {
 			});
 			// Reverse to avoid unfollow recent friends
 			nonFollowers.reverse();
-			cbWaterfall(null, _.slice(nonFollowers, 0, TWATBOT_UNFOLLOWING_LIMIT));
+			cbWaterfall(null, _.slice(nonFollowers, 0, config.app.TWATBOT_UNFOLLOWING_LIMIT));
 		},
 		// 3. Unfriend them
 		function (users, cbWaterfall) {
