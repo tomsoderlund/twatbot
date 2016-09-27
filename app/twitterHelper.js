@@ -160,7 +160,7 @@ module.exports = {
 				"access_token_secret": config.app.TWITTER_ACCESS_TOKEN_SECRET
 			});
 
-			console.log('config.app.TWATBOT_DEBUG:', config.app.TWATBOT_DEBUG);
+			console.log('Debug mode:', config.app.TWATBOT_DEBUG);
 
 			if (cbAfterInit) cbAfterInit(null);
 		}
