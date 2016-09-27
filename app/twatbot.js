@@ -29,14 +29,13 @@ var removeBlacklistedTweets = function (trigger, tweets, dateField, limit, callb
 		var blacklistedUsers = _.pluck(users, 'screen_name');
 		var whitelistedTweets = _.filter(tweets, function (tweet) {
 			// If the tweet's user is not in blacklistedUsers and not yourself, let it through
-			return (blacklistedUsers.indexOf(tweet.user.screen_name) === -1) && (tweet.user.screen_name !== process.env['TWITTER_SCREEN_NAME']);
+			return (blacklistedUsers.indexOf(tweet.user.screen_name) === -1) && (tweet.user.screen_name.toLowerCase() !== config.app.TWITTER_SCREEN_NAME.toLowerCase());
 		});
 		console.log('Remove tweets: blacklist (' + trigger.text + ', ' + dateField + '):', tweets.length, '→', whitelistedTweets.length);
 		var limitedTweets = _.slice(whitelistedTweets, 0, limit);
 		console.log('Remove tweets: limit (' + trigger.text + ', ' + dateField + '):', whitelistedTweets.length, '→', limitedTweets.length);
 		callback(err, limitedTweets);
 	});
-
 };
 
 var lastMessageUsed = "";
@@ -266,6 +265,7 @@ module.exports = {
 		async.series([
 			function (cbSeries) {
 				console.log('TwatBot starting up');
+				console.log('  config:', config.app);
 				cbSeries(null);				
 			},
 			
