@@ -24,14 +24,29 @@ if ((process.argv.length - 2) < 3) {
 else {
 	var cmdAction = process.argv[2];
 	var cmdCollection = process.argv[3];
-	var cmdData = process.argv[4];
+	var cmdText = process.argv[4];
+	var cmdTopic = process.argv[5];
 
 	switch (cmdCollection) {
 		case 'trigger':
-			var searchKey = { text: cmdData };
+			var searchKey = { text: cmdText };
 			var dataToSave = { enabled: true };
+			if (cmdTopic) {
+				dataToSave.topic = cmdTopic;
+			}
 			Trigger.update(searchKey, dataToSave, { upsert: true }, function (err, data) {
 				console.log('Trigger:', err, data);
+				mongoose.connection.close();
+			});
+			break;
+		case 'message':
+			var searchKey = { text: cmdText };
+			var dataToSave = { enabled: true };
+			if (cmdTopic) {
+				dataToSave.topic = cmdTopic;
+			}
+			Message.update(searchKey, dataToSave, { upsert: true }, function (err, data) {
+				console.log('Message:', err, data);
 				mongoose.connection.close();
 			});
 			break;
