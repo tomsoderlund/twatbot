@@ -63,6 +63,12 @@ Just start with:
 
 You need Twitter access token: https://dev.twitter.com/oauth/overview/application-owner-access-tokens
 
+
+## Manage data
+
+	node manage.js add trigger "hello world"
+
+
 ## Implementation
 
 Node.js, Twit
