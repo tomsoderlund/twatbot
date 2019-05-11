@@ -69,7 +69,7 @@ or:
 	node app/manage.js add trigger "hello world"
 
 
-### Scheduler
+## Scheduler
 
 Can be used with a scheduler: https://devcenter.heroku.com/articles/scheduler
 
@@ -84,11 +84,17 @@ E.g. if it favorites a tweet every 10 minutes: 1 * 60/10 * 24 = 144 tweets per d
 
 - `NODE_ENV`
 - `MONGODB_URI` (old: `MONGOLAB_URI`)
+
+Twitter account*:
+
 - `TWITTER_SCREEN_NAME`: username
-- `TWITTER_ACCESS_TOKEN`*
-- `TWITTER_ACCESS_TOKEN_SECRET`*
-- `TWITTER_CONSUMER_KEY`*
-- `TWITTER_CONSUMER_SECRET`*
+- `TWITTER_ACCESS_TOKEN`
+- `TWITTER_ACCESS_TOKEN_SECRET`
+- `TWITTER_CONSUMER_KEY`
+- `TWITTER_CONSUMER_SECRET`
+
+TwatBot behavior:
+
 - `TWATBOT_DEBUG`
 - `TWATBOT_FAVORITES_LIMIT`
 - `TWATBOT_FOLLOWING_LIMIT`
