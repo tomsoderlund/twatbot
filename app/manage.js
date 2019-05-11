@@ -2,7 +2,7 @@ var mongoose = require('mongoose')
 var glob = require('glob')
 var config = require('./config')
 
-mongoose.connect(config.db, { useMongoClient: true })
+mongoose.connect(config.db, { useNewUrlParser: true })
 mongoose.connection.on('error', function () {
   throw new Error('unable to connect to database at ' + config.db)
 })

@@ -18,7 +18,7 @@ var getTriggers = function (callback) {
 }
 
 var removeBlacklistedTweets = function (trigger, tweets, dateField, limit, callback) {
-  var screenNames = _.uniq(_.pluck(tweets, 'user.screen_name'))
+  var screenNames = _.uniq(_.map(tweets, 'user.screen_name'))
   var searchParams = { screen_name: { $in: screenNames } }
   // If a dateField is specified, it must exist on user for user to be blacklisted/blocked from action
   if (dateField) {
@@ -26,7 +26,7 @@ var removeBlacklistedTweets = function (trigger, tweets, dateField, limit, callb
   }
   // Search
   User.find(searchParams).exec(function (err, users) {
-    var blacklistedUsers = _.pluck(users, 'screen_name')
+    var blacklistedUsers = _.map(users, 'screen_name')
     var whitelistedTweets = _.filter(tweets, function (tweet) {
       // If the tweet's user is not in blacklistedUsers and not yourself, let it through
       return (blacklistedUsers.indexOf(tweet.user.screen_name) === -1) && (tweet.user.screen_name.toLowerCase() !== config.app.TWITTER_SCREEN_NAME.toLowerCase())
@@ -148,7 +148,7 @@ var processTrigger = function (trigger, cbAfterTrigger) {
       // Follow user
       function (cbParallel) {
         removeBlacklistedTweets(trigger, tweets, 'dateFollowed', config.app.TWATBOT_FOLLOWING_LIMIT, function (err, newTweets) {
-          var usersToFollow = _.uniq(_.pluck(newTweets, 'user'))
+          var usersToFollow = _.uniq(_.map(newTweets, 'user'))
           async.each(usersToFollow, function (user, cbEachUser) {
             async.waterfall([
               function (cbWaterfall) {

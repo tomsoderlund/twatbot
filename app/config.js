@@ -45,4 +45,4 @@ var config = {
 
 }
 
-module.exports = _.extend(config['DEFAULT'], config[env])
+module.exports = _.merge({}, config['DEFAULT'], config[env])

@@ -122,7 +122,7 @@ var getMyFriends = function (callback) {
     count: 100
   }
   twitObj.get('friends/list', params, function (err, result) {
-    var userNames = _.pluck(result.users, 'screen_name')
+    var userNames = _.map(result.users, 'screen_name')
     twitObj.get('friendships/lookup', { screen_name: userNames.join(',') }, function (err, friends) {
       callback(err, friends)
     })
