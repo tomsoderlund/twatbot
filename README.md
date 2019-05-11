@@ -64,9 +64,13 @@ or:
 	yarn start
 
 
-## Manage data with command-line tool
+## Administration – Manage data with command-line tool
 
 	node app/manage.js add trigger "hello world"
+
+on Heroku:
+
+	heroku run node app/manage.js add trigger "hello world" -a APP_NAME
 
 
 ## Scheduler
@@ -93,6 +97,8 @@ Twitter account*:
 - `TWITTER_CONSUMER_KEY`
 - `TWITTER_CONSUMER_SECRET`
 
+*You need Twitter access token: https://dev.twitter.com/oauth/overview/application-owner-access-tokens
+
 TwatBot behavior:
 
 - `TWATBOT_DEBUG`
@@ -102,5 +108,3 @@ TwatBot behavior:
 - `TWATBOT_SEARCH_LIMIT`
 - `TWATBOT_SEND_TWEETS_LIMIT`
 - `TWATBOT_UNFOLLOWING_LIMIT`
-
-*You need Twitter access token: https://dev.twitter.com/oauth/overview/application-owner-access-tokens
