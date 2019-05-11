@@ -43,7 +43,7 @@ var searchTweets = function (searchStr, options, callback) {
     if (!data.statuses) {
       data.statuses = []
     }
-    console.log('Search:', params.q, data.statuses.length)
+    console.log('Search tweets:', params.q, data.statuses.length)
     callback(err, data.statuses)
   })
 }

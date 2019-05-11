@@ -31,9 +31,9 @@ var removeBlacklistedTweets = function (trigger, tweets, dateField, limit, callb
       // If the tweet's user is not in blacklistedUsers and not yourself, let it through
       return (blacklistedUsers.indexOf(tweet.user.screen_name) === -1) && (tweet.user.screen_name.toLowerCase() !== config.app.TWITTER_SCREEN_NAME.toLowerCase())
     })
-    console.log('Remove tweets: blacklist (' + trigger.text + ', ' + dateField + '):', tweets.length, '→', whitelistedTweets.length)
+    console.log('Remove tweets due to blacklist (' + trigger.text + ', ' + dateField + '):', tweets.length, '→', whitelistedTweets.length)
     var limitedTweets = _.slice(whitelistedTweets, 0, limit)
-    console.log('Remove tweets: limit (' + trigger.text + ', ' + dateField + '):', whitelistedTweets.length, '→', limitedTweets.length)
+    console.log('Remove tweets due to limit (' + trigger.text + ', ' + dateField + '):', whitelistedTweets.length, '→', limitedTweets.length)
     callback(err, limitedTweets)
   })
 }
@@ -224,7 +224,7 @@ var searchAndTweet = function (callbackWhenDone) {
 
   // 1. For each 'trigger'
   getTriggers(function (err, triggers) {
-    console.log('Triggers:', triggers.length)
+    console.log('Triggers found:', triggers.length)
     async.each(triggers, processTrigger, callbackWhenDone)
   })
 }
